@@ -1,0 +1,1 @@
+cmd_/media/Linux/work/Programming-Concepts-Theories/Kernel_Modules/HelloWorld.ko := ld -r -m elf_x86_64 -T ./scripts/module-common.lds --build-id  -o /media/Linux/work/Programming-Concepts-Theories/Kernel_Modules/HelloWorld.ko /media/Linux/work/Programming-Concepts-Theories/Kernel_Modules/HelloWorld.o /media/Linux/work/Programming-Concepts-Theories/Kernel_Modules/HelloWorld.mod.o
