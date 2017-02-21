@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <semaphore.h>
 
 #define NUM_THREADS 2
 
@@ -10,6 +11,23 @@ typedef struct _tdata {
 } tdata; 
 
 pthread_mutex_t lock;
+
+sem_t  smp;
+
+int counter = 0;
+
+void *SemaThreadFun(void *value)
+{
+	printf("%s is now entering the thread function.\n", (char*)value);
+	sem_wait(&smp);
+	counter++;
+	sleep(2);
+	sem_post(&smp);
+	printf("%s is now leaving the thread function.\n", (char*)value);
+	printf("Value of counter is: %d\n", counter);
+	pthread_exit(value);
+}
+
 
 // The function to be executed by all threads
 void *myThreadFun(void *vargp)
@@ -34,6 +52,11 @@ void *myThreadFun(void *vargp)
 int main(int argc, char **argv)
 {
 	int i,rc;
+
+	int res;
+	pthread_t sem_thread1, sem_thread2;
+
+/*Thread synchronization with mutex*/
 	tdata input[NUM_THREADS];
 	pthread_t tid[NUM_THREADS];
 
@@ -61,5 +84,39 @@ int main(int argc, char **argv)
 	for (i = 0; i < NUM_THREADS; i++) {
 		pthread_join(tid[i], NULL);
 	}
+
+	pthread_mutex_destroy(&lock);
+/*Thread synchronization with mutex end */
+
+/*Thread synchronization with semaphone */
+
+	sem_init(&smp, 0, 1);
+
+	res = pthread_create(&sem_thread1, NULL, SemaThreadFun, "Thread1");
+	if (res != 0) {
+		perror("Creation of thread failed");
+		exit(EXIT_FAILURE);
+	}
+
+	res = pthread_create(&sem_thread2, NULL, SemaThreadFun, "Thread2");
+	if (res != 0) {
+		perror("Creation of thread failed");
+		exit(EXIT_FAILURE);
+	}
+ 
+	res = pthread_join(sem_thread1, NULL);
+	if (res != 0) {
+		perror("Joining of thread failed");
+		exit(EXIT_FAILURE);
+	}
+
+	res = pthread_join(sem_thread2, NULL);
+	if (res != 0) {
+		perror("Joining of thread failed");
+		exit(EXIT_FAILURE);
+	}
+
+	sem_destroy(&smp);	
+/*Thread synchronization with semaphone end */
 	return 0; 
 }
